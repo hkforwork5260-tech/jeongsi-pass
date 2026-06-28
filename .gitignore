@@ -20,3 +20,9 @@ captures/
 
 # Logs / tmp
 *.log
+
+# 개발/AI 협업 노트 (저장소 제외 — 로컬엔 유지)
+CLAUDE.md
+session_end_*.md
+DESIGN_HANDOFF.md
+DESIGN_FILES_BUNDLE.md
