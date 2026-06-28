@@ -99,10 +99,12 @@ class CatalogService(
         val cards = buildCards(units.findAll(), deviceDbId)
         val hasScore = cards.any { it.admission.positionDelta != null }
         val ranked = if (hasScore) {
-            cards.sortedWith(
-                compareByDescending<UnitCardDto> { it.admission.eligible }
-                    .thenByDescending { rankScore(it) },
-            )
+            // 성적대 매칭: 내 위치(환산−배치컷) ±10 이내만 노출 (너무 안전/무리한 학교 제외)
+            cards.filter { val d = it.admission.positionDelta; d != null && kotlin.math.abs(d) <= 10.0 }
+                .sortedWith(
+                    compareByDescending<UnitCardDto> { it.admission.eligible }
+                        .thenByDescending { rankScore(it) },
+                )
         } else {
             cards.sortedByDescending { it.admission.cutPercentile }
         }
