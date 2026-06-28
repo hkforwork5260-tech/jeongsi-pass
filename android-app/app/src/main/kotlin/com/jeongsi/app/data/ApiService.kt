@@ -48,6 +48,9 @@ interface ApiService {
         @Query("na") na: String? = null,
         @Query("da") da: String? = null,
         @Query("track") track: String? = null,
+        @Query("region") region: String? = null,
+        @Query("university") university: String? = null,
+        @Query("department") department: String? = null,
         @Query("offset") offset: Int = 0,
         @Query("limit") limit: Int = 12,
     ): StrategyCombos

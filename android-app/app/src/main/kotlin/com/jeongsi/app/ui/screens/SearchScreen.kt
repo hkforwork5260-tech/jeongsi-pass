@@ -103,7 +103,6 @@ class SearchViewModel : ViewModel() {
 
 private enum class Mode(val label: String) { BASIC("기본 검색"), RECOMMEND("추천"), THEME("인기 테마"), DIRECT("직접 검색") }
 
-private val REGIONS = listOf("서울", "부산", "대구", "인천", "광주", "대전", "울산", "세종", "경기", "강원", "충북", "충남", "전북", "전남", "경북", "경남", "제주")
 private val THEMES = listOf("의예" to "의대", "약학" to "약대", "수의예" to "수의대", "한의예" to "한의대", "반도체" to "반도체", "컴퓨터" to "컴퓨터/SW", "소프트웨어" to "소프트웨어", "경영" to "경영", "교육" to "교대/사범")
 
 @Composable
@@ -228,82 +227,4 @@ private fun Chip(label: String, selected: Boolean, onClick: () -> Unit) {
     HiFiChip(text = label, selected = selected, small = true, onClick = onClick)
 }
 
-/** 필터 칩 — 탭 시 3칸 그리드 + 세로 스크롤 선택 다이얼로그. 선택값 없으면 label, 있으면 선택값 표시. */
-@Composable
-private fun FilterDropdown(label: String, selected: String?, options: List<Pair<String, String>>, columns: Int = 3, onPick: (String?) -> Unit) {
-    var open by remember { mutableStateOf(false) }
-    val display = options.firstOrNull { it.first == selected }?.second
-    val on = selected != null
-    Row(
-        Modifier.background(if (on) HiFiColors.Brand else HiFiColors.Bg2, RoundedCornerShape(999.dp))
-            .border(1.dp, if (on) HiFiColors.Brand else HiFiColors.Border, RoundedCornerShape(999.dp))
-            .clickableNoRipple { open = true }
-            .padding(horizontal = 12.dp, vertical = 7.dp),
-        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-    ) {
-        Text(display ?: label, style = HiFiType.caption.copy(fontWeight = FontWeight.Bold),
-            color = if (on) androidx.compose.ui.graphics.Color.White else HiFiColors.Text)
-        Text(" ▾", style = HiFiType.caption, color = if (on) androidx.compose.ui.graphics.Color.White else HiFiColors.Text2)
-    }
-    if (open) {
-        FilterPickerDialog(label, selected, options, columns, onDismiss = { open = false }) {
-            onPick(it); open = false
-        }
-    }
-}
-
-/** 선택지를 N칸 그리드로 펼치고 세로 스크롤되는 다이얼로그. 셀은 균일 높이·가운데정렬. */
-@Composable
-private fun FilterPickerDialog(
-    label: String,
-    selected: String?,
-    options: List<Pair<String, String>>,
-    columns: Int,
-    onDismiss: () -> Unit,
-    onPick: (String?) -> Unit,
-) {
-    Dialog(onDismissRequest = onDismiss) {
-        Column(
-            Modifier.fillMaxWidth()
-                .background(HiFiColors.Bg, RoundedCornerShape(18.dp))
-                .padding(18.dp),
-        ) {
-            Text("$label 선택", style = HiFiType.title, color = HiFiColors.Text)
-            Spacer(Modifier.height(14.dp))
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(columns),
-                modifier = Modifier.heightIn(max = 420.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                item { PickerCell("전체", selected == null) { onPick(null) } }
-                gridItems(options) { (v, d) -> PickerCell(d, selected == v) { onPick(v) } }
-            }
-        }
-    }
-}
-
-/** 그리드 셀 — 고정 높이·가운데정렬·최대 2줄(말줄임). 들쭉날쭉/줄바꿈 orphan 방지. */
-@Composable
-private fun PickerCell(text: String, selected: Boolean, onClick: () -> Unit) {
-    Box(
-        Modifier.fillMaxWidth()
-            .height(46.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(if (selected) HiFiColors.Brand else HiFiColors.Bg2)
-            .border(1.dp, if (selected) HiFiColors.Brand else HiFiColors.Border, RoundedCornerShape(12.dp))
-            .clickableNoRipple { onClick() }
-            .padding(horizontal = 6.dp),
-        contentAlignment = androidx.compose.ui.Alignment.Center,
-    ) {
-        Text(
-            text,
-            style = HiFiType.caption.copy(fontWeight = FontWeight.Medium, fontSize = 11.sp, letterSpacing = 0.sp),
-            color = if (selected) androidx.compose.ui.graphics.Color.White else HiFiColors.Text,
-            maxLines = 1,
-            softWrap = false,
-            overflow = TextOverflow.Ellipsis,
-            textAlign = TextAlign.Center,
-        )
-    }
-}
+// 필터 칩/다이얼로그는 FilterUi.kt로 공용화(검색·전략·지원가능 공유).

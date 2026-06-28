@@ -119,9 +119,17 @@ class CatalogService(
     }
 
     /** 합격 라벨별 추천 — 라벨 코드별로 묶어 반환(안정/적정/소신/상향). */
-    fun recommend(deviceDbId: Long?): Map<String, List<UnitCardDto>> {
-        val cards = buildCards(units.findAll(), deviceDbId)
-            .filter { it.admission.labelCode != null }
+    fun recommend(
+        deviceDbId: Long?, track: String? = null, region: String? = null,
+        university: String? = null, department: String? = null,
+    ): Map<String, List<UnitCardDto>> {
+        val cards = buildCards(units.findAll(), deviceDbId).filter {
+            it.admission.labelCode != null &&
+                (track == null || it.track == track) &&
+                (region == null || it.university.region == region) &&
+                (university == null || it.university.name == university) &&
+                (department == null || it.departmentName == department)
+        }
         return cards.groupBy { it.admission.labelCode!! }
             .mapValues { (_, v) -> v.sortedByDescending { it.admission.cutPercentile } }
     }
@@ -178,18 +186,25 @@ class CatalogService(
     /** 군별 목표 라벨에 맞는 조합 여러 개 (페이지네이션). 각 군 풀을 인덱스로 zip. */
     fun strategyCombos(
         deviceDbId: Long?, gaLabel: String, naLabel: String, daLabel: String,
-        track: String?, offset: Int, limit: Int,
+        track: String?, region: String?, university: String?, department: String?,
+        offset: Int, limit: Int,
     ): com.jeongsi.backend.dto.StrategyCombosDto {
         val cards = buildCards(units.findAll(), deviceDbId)
-        fun pool(g: String, want: String) = cards
-            .filter { it.recruitGroup == g && it.admission.eligible && (track == null || it.track == track) }
-            .sortedWith(
-                // 원하는 라벨 우선, 그 다음 라벨 근접도, 그 다음 배치컷
-                compareByDescending<com.jeongsi.backend.dto.UnitCardDto> { it.admission.labelCode == want }
-                    .thenBy { kotlin.math.abs((it.admission.positionDelta ?: -99.0) - labelTargetDelta(want)) },
-            )
-        // 각 군 상위 풀(최대 8)로 카르테시안 조합 생성 → 다양한 조합 다수.
-        val ga = pool("GA", gaLabel).take(8); val na = pool("NA", naLabel).take(8); val da = pool("DA", daLabel).take(8)
+        fun pool(g: String, want: String): List<com.jeongsi.backend.dto.UnitCardDto> {
+            val base = cards.filter {
+                it.recruitGroup == g && it.admission.eligible &&
+                    (track == null || it.track == track) &&
+                    (region == null || it.university.region == region) &&
+                    (university == null || it.university.name == university) &&
+                    (department == null || it.departmentName == department)
+            }
+            // ★ 원하는 라벨로 '필터'(정렬만이 아니라). 해당 라벨 없으면 근접 라벨로 폴백.
+            val matched = base.filter { it.admission.labelCode == want }
+            return (if (matched.isNotEmpty()) matched.sortedByDescending { it.admission.cutPercentile }
+            else base.sortedBy { kotlin.math.abs((it.admission.positionDelta ?: -99.0) - labelTargetDelta(want)) })
+                .take(8)
+        }
+        val ga = pool("GA", gaLabel); val na = pool("NA", naLabel); val da = pool("DA", daLabel)
         val triples = ArrayList<Triple<Int, Int, Int>>()
         for (i in ga.indices) for (j in na.indices) for (k in da.indices) triples.add(Triple(i, j, k))
         // 안정성 높은 순으로 정렬해 좋은 조합부터

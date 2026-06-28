@@ -27,8 +27,11 @@ object Repository {
     suspend fun mockSummary(): MockSummary = api.mockSummary()
     suspend fun recommend(): Map<String, List<UnitCard>> = api.recommend()
     suspend fun strategy(preset: String, track: String? = null): Strategy = api.strategy(preset, track)
-    suspend fun strategyCombos(preset: String, ga: String?, na: String?, da: String?, track: String?, offset: Int, limit: Int = 12): StrategyCombos =
-        api.strategyCombos(preset, ga, na, da, track, offset, limit)
+    suspend fun strategyCombos(
+        preset: String, ga: String?, na: String?, da: String?, track: String?,
+        region: String? = null, university: String? = null, department: String? = null,
+        offset: Int, limit: Int = 12,
+    ): StrategyCombos = api.strategyCombos(preset, ga, na, da, track, region, university, department, offset, limit)
     suspend fun universities(): List<String> = api.universities()
 
     /** 실제 지원 등록. 성공 시 null, 실패(한도·모의지원 아님 등) 시 메시지. */

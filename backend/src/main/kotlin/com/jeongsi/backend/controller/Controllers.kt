@@ -81,8 +81,14 @@ class UnitController(
         catalog.search(devices.resolveOrNull(deviceId)?.id, group, track, region, q, minCut, maxCut, sort, university, department)
 
     @GetMapping("/recommend")
-    fun recommend(@RequestHeader(DEVICE_HEADER, required = false) deviceId: String?): Map<String, List<UnitCardDto>> =
-        catalog.recommend(devices.resolveOrNull(deviceId)?.id)
+    fun recommend(
+        @RequestHeader(DEVICE_HEADER, required = false) deviceId: String?,
+        @RequestParam(required = false) track: String?,
+        @RequestParam(required = false) region: String?,
+        @RequestParam(required = false) university: String?,
+        @RequestParam(required = false) department: String?,
+    ): Map<String, List<UnitCardDto>> =
+        catalog.recommend(devices.resolveOrNull(deviceId)?.id, track, region, university, department)
 
     @GetMapping("/strategy")
     fun strategy(
@@ -100,12 +106,16 @@ class UnitController(
         @RequestParam(required = false) na: String?,
         @RequestParam(required = false) da: String?,
         @RequestParam(required = false) track: String?,
+        @RequestParam(required = false) region: String?,
+        @RequestParam(required = false) university: String?,
+        @RequestParam(required = false) department: String?,
         @RequestParam(required = false, defaultValue = "0") offset: Int,
         @RequestParam(required = false, defaultValue = "12") limit: Int,
     ): StrategyCombosDto {
         val (pg, pn, pd) = catalog.presetLabels(preset)
         return catalog.strategyCombos(
-            devices.resolveOrNull(deviceId)?.id, ga ?: pg, na ?: pn, da ?: pd, track, offset, limit,
+            devices.resolveOrNull(deviceId)?.id, ga ?: pg, na ?: pn, da ?: pd,
+            track, region, university, department, offset, limit,
         )
     }
 

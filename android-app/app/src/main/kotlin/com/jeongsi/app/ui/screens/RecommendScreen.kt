@@ -1,6 +1,8 @@
 package com.jeongsi.app.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -56,6 +58,9 @@ fun RecommendScreen(onBack: () -> Unit, onOpenDetail: (Long) -> Unit, vm: Recomm
     val state by vm.state.collectAsStateCompat()
     var track by remember { mutableStateOf<String?>(null) }
     var group by remember { mutableStateOf<String?>(null) }
+    var region by remember { mutableStateOf<String?>(null) }
+    var university by remember { mutableStateOf<String?>(null) }
+    var department by remember { mutableStateOf<String?>(null) }
     var expanded by remember { mutableStateOf("SAFE") }   // 펼친 라벨(하나만)
     LaunchedEffect(Unit) { vm.load() }
 
@@ -68,8 +73,15 @@ fun RecommendScreen(onBack: () -> Unit, onOpenDetail: (Long) -> Unit, vm: Recomm
                 fun filtered(list: List<UnitCard>) = list
                     .filter { track == null || it.track == track }
                     .filter { group == null || it.recruitGroup == group }
+                    .filter { region == null || it.university.region == region }
+                    .filter { university == null || it.university.name == university }
+                    .filter { department == null || it.departmentName == department }
 
                 if (s.data.values.all { it.isEmpty() }) { CenterText("성적을 입력하면 합격 라벨별로 정리해 드려요."); return@Column }
+
+                val allCards = s.data.values.flatten()
+                val univOptions = allCards.map { it.university.name }.distinct().sorted().map { it to it.replace("대학교", "대") }
+                val deptOptions = allCards.map { it.departmentName }.distinct().sorted().map { it to it }
 
                 ScrollColumn {
                     // 필터
@@ -83,6 +95,15 @@ fun RecommendScreen(onBack: () -> Unit, onOpenDetail: (Long) -> Unit, vm: Recomm
                         listOf("GA" to "가군", "NA" to "나군", "DA" to "다군").forEach { (c, n) ->
                             HiFiChip(n, selected = group == c, small = true, onClick = { group = c })
                         }
+                    }
+                    // 지역·학교·학과 필터 (검색탭과 동일)
+                    Row(
+                        Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(top = 6.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        FilterDropdown("지역", region, REGIONS.map { it to it }) { region = it }
+                        FilterDropdown("학교", university, univOptions) { university = it }
+                        FilterDropdown("학과", department, deptOptions, columns = 2) { department = it }
                     }
 
                     // 라벨 헤더(접기/펼치기)
