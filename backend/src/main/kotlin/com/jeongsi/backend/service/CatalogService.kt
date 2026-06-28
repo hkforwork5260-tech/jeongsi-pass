@@ -190,26 +190,15 @@ class CatalogService(
         offset: Int, limit: Int,
     ): com.jeongsi.backend.dto.StrategyCombosDto {
         val cards = buildCards(units.findAll(), deviceDbId)
-        fun pool(g: String, want: String): List<com.jeongsi.backend.dto.UnitCardDto> {
-            val base = cards.filter {
-                it.recruitGroup == g && it.admission.eligible &&
+        // ★ 선택한 라벨에 '정확히' 맞는 학과만. 없으면 빈 풀 → 그 군이 빈 조합은 아예 안 나옴(폴백 없음).
+        fun pool(g: String, want: String): List<com.jeongsi.backend.dto.UnitCardDto> =
+            cards.filter {
+                it.recruitGroup == g && it.admission.eligible && it.admission.labelCode == want &&
                     (track == null || it.track == track) &&
                     (region == null || it.university.region == region) &&
                     (university == null || it.university.name == university) &&
                     (department == null || it.departmentName == department)
-            }
-            // ★ 원하는 라벨로 '필터'. 해당 라벨 학과가 없으면 '가장 가까운 단일 라벨'로 폴백(군별 라벨 일관성).
-            val matched = base.filter { it.admission.labelCode == want }
-            val chosen = if (matched.isNotEmpty()) {
-                matched
-            } else {
-                val nearestLabel = base.minByOrNull {
-                    kotlin.math.abs((it.admission.positionDelta ?: -99.0) - labelTargetDelta(want))
-                }?.admission?.labelCode
-                base.filter { it.admission.labelCode == nearestLabel }
-            }
-            return chosen.sortedByDescending { it.admission.cutPercentile }.take(8)
-        }
+            }.sortedByDescending { it.admission.cutPercentile }.take(8)
         val ga = pool("GA", gaLabel); val na = pool("NA", naLabel); val da = pool("DA", daLabel)
         val triples = ArrayList<Triple<Int, Int, Int>>()
         for (i in ga.indices) for (j in na.indices) for (k in da.indices) triples.add(Triple(i, j, k))
