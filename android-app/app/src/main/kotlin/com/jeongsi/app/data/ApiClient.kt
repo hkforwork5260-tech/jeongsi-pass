@@ -11,8 +11,10 @@ import java.util.concurrent.TimeUnit
 
 /** Retrofit 싱글톤. X-Device-Id 헤더 자동 주입. JSON은 snake_case ↔ camelCase 자동 변환. */
 object ApiClient {
-    // 에뮬레이터에서 호스트 PC의 localhost = 10.0.2.2. 실기기는 PC의 LAN IP로 교체.
-    private const val BASE_URL = "http://10.0.2.2:8080/"
+    // 클라우드(Railway) — 실기기·에뮬 어디서나 동작.
+    private const val BASE_URL = "https://backend-production-286d.up.railway.app/"
+    // 로컬 백엔드 개발 시: 에뮬레이터=10.0.2.2, 실기기=PC의 LAN IP
+    // private const val BASE_URL = "http://10.0.2.2:8080/"
 
     @OptIn(ExperimentalSerializationApi::class)
     private val json = Json {
