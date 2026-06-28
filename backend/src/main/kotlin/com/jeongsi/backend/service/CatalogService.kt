@@ -129,8 +129,11 @@ class CatalogService(
     /** 군별 추천 1개씩(가/나/다) — 상위 후보 중 랜덤(화면 들어올 때마다 변동). */
     fun groupRecommend(deviceDbId: Long?): List<UnitCardDto> {
         val cards = buildCards(units.findAll(), deviceDbId)
+        val scored = cards.any { it.admission.positionDelta != null }
         return listOf("GA", "NA", "DA").mapNotNull { g ->
             cards.filter { it.recruitGroup == g }
+                // 성적 있으면 성적대 ±10 이내만 (너무 안전/무리한 추천 방지)
+                .filter { !scored || (it.admission.positionDelta?.let { d -> kotlin.math.abs(d) <= 10.0 } ?: false) }
                 .sortedByDescending { rankScore(it) }
                 .take(6)
                 .randomOrNull()

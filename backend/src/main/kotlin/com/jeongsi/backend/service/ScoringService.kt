@@ -50,18 +50,18 @@ class ScoringService(
         return Verdict(round1(converted), cut, round1(delta), pred.labelCode, pred.labelName, prob, eligible, reason)
     }
 
-    /** 환산점수(평균백분위) = Σ(영역 백분위 × 반영비율) / Σ반영비율. 배치컷과 같은 백분위 스케일. */
+    /**
+     * 환산점수(평균백분위) = Σ(영역 백분위 × 반영비율) / Σ(입력된 영역의 반영비율).
+     * ★ 입력 안 한 영역은 분자·분모 모두에서 제외(0점 처리 X) — 부분 입력이어도 공정한 추정.
+     */
     fun convertedScore(rule: ScoreRule, score: UserScore): Double {
-        val wK = rule.weightKorean.toDouble()
-        val wM = rule.weightMath.toDouble()
-        val wE = rule.weightEnglish.toDouble()
-        val wI = rule.weightInquiry.toDouble()
-        val korean = (score.koreanPct ?: 0).toDouble()
-        val math = (score.mathPct ?: 0).toDouble()
-        val english = englishConverted(rule, score.englishGrade)
-        val inquiry = inquiryAvgPct(score, rule.inquiryCount)
-        val sumW = (wK + wM + wE + wI).takeIf { it > 0 } ?: 1.0
-        return (korean * wK + math * wM + english * wE + inquiry * wI) / sumW
+        var num = 0.0
+        var den = 0.0
+        score.koreanPct?.let { num += it.toDouble() * rule.weightKorean.toDouble(); den += rule.weightKorean.toDouble() }
+        score.mathPct?.let { num += it.toDouble() * rule.weightMath.toDouble(); den += rule.weightMath.toDouble() }
+        score.englishGrade?.let { num += englishConverted(rule, it) * rule.weightEnglish.toDouble(); den += rule.weightEnglish.toDouble() }
+        inquiryAvgPctOrNull(score)?.let { num += it * rule.weightInquiry.toDouble(); den += rule.weightInquiry.toDouble() }
+        return if (den > 0) num / den else 0.0
     }
 
     // ---- 반영유형별 총점 (성적분석용) — 메가 방식 ---------------------------
@@ -104,13 +104,14 @@ class ScoringService(
         }.getOrDefault(0.0)
     }
 
-    private fun inquiryAvgPct(score: UserScore, inquiryCount: Int): Double {
+    /** 입력된 탐구 백분위 평균(둘 다 있으면 평균, 하나면 그 값, 없으면 null). */
+    private fun inquiryAvgPctOrNull(score: UserScore): Double? {
         val a = score.inquiry1Pct; val b = score.inquiry2Pct
         return when {
-            a != null && b != null -> if (inquiryCount >= 2) (a + b) / 2.0 else maxOf(a, b).toDouble()
+            a != null && b != null -> (a + b) / 2.0
             a != null -> a.toDouble()
             b != null -> b.toDouble()
-            else -> 0.0
+            else -> null
         }
     }
 
