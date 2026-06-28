@@ -198,11 +198,17 @@ class CatalogService(
                     (university == null || it.university.name == university) &&
                     (department == null || it.departmentName == department)
             }
-            // ★ 원하는 라벨로 '필터'(정렬만이 아니라). 해당 라벨 없으면 근접 라벨로 폴백.
+            // ★ 원하는 라벨로 '필터'. 해당 라벨 학과가 없으면 '가장 가까운 단일 라벨'로 폴백(군별 라벨 일관성).
             val matched = base.filter { it.admission.labelCode == want }
-            return (if (matched.isNotEmpty()) matched.sortedByDescending { it.admission.cutPercentile }
-            else base.sortedBy { kotlin.math.abs((it.admission.positionDelta ?: -99.0) - labelTargetDelta(want)) })
-                .take(8)
+            val chosen = if (matched.isNotEmpty()) {
+                matched
+            } else {
+                val nearestLabel = base.minByOrNull {
+                    kotlin.math.abs((it.admission.positionDelta ?: -99.0) - labelTargetDelta(want))
+                }?.admission?.labelCode
+                base.filter { it.admission.labelCode == nearestLabel }
+            }
+            return chosen.sortedByDescending { it.admission.cutPercentile }.take(8)
         }
         val ga = pool("GA", gaLabel); val na = pool("NA", naLabel); val da = pool("DA", daLabel)
         val triples = ArrayList<Triple<Int, Int, Int>>()

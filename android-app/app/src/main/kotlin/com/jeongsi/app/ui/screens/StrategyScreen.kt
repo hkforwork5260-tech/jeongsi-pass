@@ -111,8 +111,7 @@ fun StrategyScreen(onBack: () -> Unit, onOpenDetail: (Long) -> Unit, onOpenCombo
                     FilterDropdown("학교", vm.university, univs.map { it to it.replace("대학교", "대") }) { vm.university = it; vm.reset() }
                     FilterDropdown("학과", vm.department, depts.map { it to it }, columns = 2) { vm.department = it; vm.reset() }
                 }
-                Text("추천 조합 ${combos.size}개", style = HiFiType.caption.copy(fontWeight = FontWeight.Bold), color = HiFiColors.Text,
-                    modifier = Modifier.padding(top = 4.dp, bottom = 4.dp))
+                Box(Modifier.padding(top = 2.dp)) {}
             }
             if (combos.isEmpty()) {
                 item { Box(Modifier.padding(top = 24.dp)) { Text("조건에 맞는 조합이 없어요. 라벨·계열을 바꿔보세요.", color = HiFiColors.Text2) } }
