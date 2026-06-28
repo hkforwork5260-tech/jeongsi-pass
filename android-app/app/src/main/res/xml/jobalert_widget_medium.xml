@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Medium 위젯(4×2). 핀 추가 시 이 크기로 배치. -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:minWidth="250dp"
+    android:minHeight="110dp"
+    android:targetCellWidth="4"
+    android:targetCellHeight="2"
+    android:minResizeWidth="110dp"
+    android:minResizeHeight="40dp"
+    android:updatePeriodMillis="1800000"
+    android:initialLayout="@layout/widget_jobalert"
+    android:previewLayout="@layout/widget_jobalert"
+    android:resizeMode="horizontal|vertical"
+    android:widgetCategory="home_screen" />

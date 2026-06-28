@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Small 위젯(2×1). 핀 추가 시 이 크기로 배치. -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:minWidth="110dp"
+    android:minHeight="40dp"
+    android:targetCellWidth="2"
+    android:targetCellHeight="1"
+    android:minResizeWidth="40dp"
+    android:minResizeHeight="40dp"
+    android:updatePeriodMillis="1800000"
+    android:initialLayout="@layout/widget_jobalert_wide"
+    android:previewLayout="@layout/widget_jobalert_wide"
+    android:resizeMode="horizontal|vertical"
+    android:widgetCategory="home_screen" />

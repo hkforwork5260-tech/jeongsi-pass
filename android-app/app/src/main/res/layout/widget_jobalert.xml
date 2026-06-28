@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="12dp"
+    android:background="@drawable/widget_bg">
+
+    <ImageView
+        android:id="@+id/widget_mascot"
+        android:layout_width="52dp"
+        android:layout_height="52dp"
+        android:contentDescription="꽁이"
+        android:scaleType="fitCenter" />
+
+    <TextView
+        android:id="@+id/widget_count"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:textColor="#4F6EF0"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:maxLines="1"
+        android:text="새 공고 0" />
+
+    <TextView
+        android:id="@+id/widget_closing"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:textColor="#E5484D"
+        android:textSize="13sp"
+        android:maxLines="1"
+        android:text="" />
+
+    <TextView
+        android:id="@+id/widget_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:textColor="#999999"
+        android:textSize="10sp"
+        android:text="채용알리미" />
+
+</LinearLayout>
